@@ -1,0 +1,56 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+# Build environment, just select the Microsoft-hosted agent, without needing to set up any infrastructure of your own.
+pool:
+  vmImage: 'Ubuntu-16.04'
+  # other options: 'macOS-10.13', 'vs2017-win2016'
+
+
+variables:
+  buildConfiguration: 'Release'
+
+
+steps:
+
+- script: dotnet restore src
+  displayName: 'Prepare - Restore nuget packages'
+
+- script: dotnet build src --configuration $(buildConfiguration) --no-restore
+  displayName: 'Build - $(buildConfiguration)'
+
+- script: dotnet test src --configuration $(buildConfiguration) --logger trx
+  displayName: 'Test'
+
+# @ means version
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx'
+
+
+- script: dotnet test src --configuration $(buildConfiguration) --logger trx --collect "Code coverage"
+- task: PublishTestResults@2
+  inputs:
+    testRunner: VSTest
+    testResultsFiles: '**/*.trx'
+# Data collector 'Code Coverage' message: No code coverage data available. Code coverage is currently supported only on Windows..
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/dotnet-core?view=azure-devops&tabs=yaml#collect-code-coverage
+
+
+
+- script: dotnet publish src --configuration $(buildConfiguration) --no-restore --no-build --output $BUILD_ARTIFACTSTAGINGDIRECTORY
+  displayName: 'Publish'
+
+# Publish with Artifacts
+- task: PublishBuildArtifacts@1
+
+# Publish to Linux VM
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/apps/cd/deploy-linuxvm-deploygroups?view=azure-devops
+
