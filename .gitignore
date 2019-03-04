@@ -282,3 +282,5 @@ Source/AutomationTest/Result
 Source/AutomationTest/venv
 
 /Source/DbScripts/ServicePortal/AlwaysEncrypted_withDynamicInputs.ps1
+
+.DS_Store
