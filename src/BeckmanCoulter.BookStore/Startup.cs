@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BeckmanCoulter.BookStore.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -73,7 +72,13 @@ namespace BeckmanCoulter.BookStore
             services.AddDefaultIdentity<IdentityUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             #region Add AddSerilog
 
@@ -101,14 +106,6 @@ namespace BeckmanCoulter.BookStore
 
             #endregion Add AddSerilog
         }
-      services.AddMvc(options =>
-      {
-        var policy = new AuthorizationPolicyBuilder()
-          .RequireAuthenticatedUser()
-          .Build();
-        options.Filters.Add(new AuthorizeFilter(policy));
-      }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-    }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
