@@ -1,1 +1,0 @@
-2019-03-06 08:47:08.562 +08:00 [Debug] [BeckmanCoulter.BookStore.Controllers.HomeController] [BookStore/LTCN3600]  view home page.
