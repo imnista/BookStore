@@ -14,7 +14,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTestTarget", "UnitTestT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTestTarget.Tests", "UnitTestTarget.Tests\UnitTestTarget.Tests.csproj", "{B154F43A-2ED9-4787-B30D-FC69F743349A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeckmanCoulter.SwaggerPrototype", "BeckmanCoulter.SwaggerPrototype\BeckmanCoulter.SwaggerPrototype.csproj", "{1E73AC6E-85EB-49FF-9AB9-C8701B1B8FF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BeckmanCoulter.SwaggerPrototype", "BeckmanCoulter.SwaggerPrototype\BeckmanCoulter.SwaggerPrototype.csproj", "{1E73AC6E-85EB-49FF-9AB9-C8701B1B8FF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
