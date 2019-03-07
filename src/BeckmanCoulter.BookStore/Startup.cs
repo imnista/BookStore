@@ -63,12 +63,14 @@ namespace BeckmanCoulter.BookStore
         options.TokenValidationParameters.ValidateIssuer = false;
       });
 
-      services.AddDbContext<ApplicationDbContext>(options =>
-          options.UseSqlServer(
-              Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlServer(
+            //        Configuration.GetConnectionString("DefaultConnection")));
+
+            // Use sqlite DbContext
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlite(Configuration.GetConnectionString("SqliteConnection")
+                ));
 
             services.AddMvc(options =>
             {

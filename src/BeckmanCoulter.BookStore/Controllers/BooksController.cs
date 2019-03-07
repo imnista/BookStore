@@ -3,11 +3,15 @@ using BeckmanCoulter.BookStore.DbEntity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using BeckmanCoulter.BookStore.Helper;
 using BeckmanCoulter.BookStore.ViewModels;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
 namespace BeckmanCoulter.BookStore.Controllers
@@ -92,8 +96,55 @@ namespace BeckmanCoulter.BookStore.Controllers
       return RedirectToAction(nameof(Index));
     }
 
-    // GET: Books/Edit/5
-    public async Task<IActionResult> Edit(Guid? id)
+      public async Task<IActionResult> UploadList(List<IFormFile> files)
+      {
+          if (files == null || files.Count == 0)
+              return RedirectToAction(nameof(Index));
+
+          try
+          {
+              var req = this.Request;
+
+              var file = files[0];
+
+              if (!file.FileName.EndsWith(".xlsx"))
+                  return RedirectToAction(nameof(Index));
+
+              DataTable dt;
+              using (Stream s = file.OpenReadStream())
+              {
+                  dt = NPOIHelper.ReadStreamToDataTable(s, null, true);
+              }
+
+              int rowCount = dt.Rows.Count;
+              for (int i = 0; i < rowCount; i++)
+              {
+                  var bookEntity = new Book
+                  {
+                      Id = Guid.NewGuid(),
+                      UserName = dt.Rows[i]["UserName"].ToString(),
+                      CreateTime = DateTime.Now,
+                      UpdateTime = DateTime.Now,
+                      Description = dt.Rows[i]["Description"].ToString(),
+                      Name = dt.Rows[i]["Name"].ToString(),
+                      Quantity = int.Parse(dt.Rows[i]["Quantity"].ToString()),
+                      Image = string.Empty,
+                  };
+
+                  _context.Add(bookEntity);
+              }
+              await _context.SaveChangesAsync();
+          }
+          catch (Exception e)
+          {
+              RedirectToAction(nameof(Index));
+          }
+
+          return RedirectToAction(nameof(Index));
+      }
+
+        // GET: Books/Edit/5
+        public async Task<IActionResult> Edit(Guid? id)
     {
       if (id == null)
       {
