@@ -1,4 +1,4 @@
-# BecBookStore
+# BookStore
 
 Book Store 
 
