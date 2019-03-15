@@ -67,16 +67,7 @@ namespace BeckmanCoulter.BookStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                var filePath = _env.WebRootPath + @"\bookfiles\";
-                var fileName = Guid.NewGuid() + Path.GetExtension(bookViewModels.Files.FileName);
-
-                if (bookViewModels.Files.Length > 0)
-                {
-                    using (var stream = new FileStream(filePath + fileName, FileMode.Create))
-                    {
-                        await bookViewModels.Files.CopyToAsync(stream);
-                    }
-                }
+                var fileName = await ProcessBookCoverImage(bookViewModels);
 
                 var bookEntity = new Book
                 {
@@ -229,6 +220,29 @@ namespace BeckmanCoulter.BookStore.Controllers
         private bool BookExists(Guid id)
         {
             return _context.BookEntity.Any(e => e.Id == id);
+        }
+
+        private async Task<string> ProcessBookCoverImage(BookViewModels bookViewModels)
+        {
+            if (null == bookViewModels.Files)
+            {
+                return string.Empty;
+            }
+            else
+            {
+                var filePath = _env.WebRootPath + @"\bookfiles\";
+                var fileName = Guid.NewGuid() + Path.GetExtension(bookViewModels.Files.FileName);
+
+                if (bookViewModels.Files.Length > 0)
+                {
+                    using (var stream = new FileStream(filePath + fileName, FileMode.Create))
+                    {
+                        await bookViewModels.Files.CopyToAsync(stream);
+                    }
+                }
+
+                return fileName;
+            }
         }
     }
 }
