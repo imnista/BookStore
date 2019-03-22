@@ -9,10 +9,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BeckmanCoulter.BookStore.Helper;
+using BeckmanCoulter.BookStore.Mail;
 using BeckmanCoulter.BookStore.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using SendGrid.Helpers.Mail;
 
 namespace BeckmanCoulter.BookStore.Controllers
 {
@@ -20,11 +22,13 @@ namespace BeckmanCoulter.BookStore.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IHostingEnvironment _env;
+        private readonly IMailQueueService _mailQueueService;
 
-        public BooksController(ApplicationDbContext context, IHostingEnvironment env)
+        public BooksController(ApplicationDbContext context, IHostingEnvironment env, IMailQueueService mailQueueService)
         {
             _context = context;
             _env = env;
+            _mailQueueService = mailQueueService;
         }
 
         // GET: Books
@@ -55,6 +59,13 @@ namespace BeckmanCoulter.BookStore.Controllers
         // GET: Books/Create
         public IActionResult Create()
         {
+            var from = new EmailAddress("lfu01@beckman.com", "Lynn");
+            var subject = "Sending with SendGrid is Fun";
+            var to = new EmailAddress("lfu01@beckman.com", "Lynn");
+            var plainTextContent = "and easy to do anywhere, even with C#";
+            var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
+            var mail = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            _mailQueueService.SendMessage(mail);
             return View();
         }
 

@@ -1,4 +1,5 @@
 ﻿using BeckmanCoulter.BookStore.Data;
+using BeckmanCoulter.BookStore.Mail;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -79,6 +80,9 @@ namespace BeckmanCoulter.BookStore
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddHostedService<MailHostedService>();
+            services.AddSingleton<IMailQueueService, MailQueueService>();
 
             #region Add AddSerilog
 
