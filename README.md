@@ -1,5 +1,5 @@
 # BookStore
 
-Book Store 
+Current CI/CD Status
 
-[![Build Status](https://dev.azure.com/BecDevOps/BecBookStore/_apis/build/status/BecBookStore?branchName=master)](https://dev.azure.com/BecDevOps/BecBookStore/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://dev.azure.com/BecDevOps/BecBookStore/_apis/build/status/imnista.BookStore?branchName=master)](https://dev.azure.com/BecDevOps/BecBookStore/_build/latest?definitionId=2&branchName=master)
