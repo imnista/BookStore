@@ -3,7 +3,6 @@
 @{
   ViewData["Title"] = "Details";
   Layout = "~/Views/Shared/_Layout.cshtml";
-  var image = @Model.Image;
 }
 
 <h2>Details</h2>
@@ -28,7 +27,7 @@
       @Html.DisplayNameFor(model => model.Image)
     </dt>
     <dd>
-      <img src="@Url.Content(image)" />
+      <img src="@Url.Content(Model.Image)" />
     </dd>
     <dt>
       @Html.DisplayNameFor(model => model.Description)
@@ -45,6 +44,17 @@
   </dl>
 </div>
 <div>
+  @if (Model.Quantity > 0)
+  {
+    <form asp-action="Details">
+      <input type="submit" value="Borrow" class="btn btn-default" />
+    </form>
+  }
+  else
+  {
+    <div>这本书没有库存了！</div>
+  }
+
   <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
   <a asp-action="Index">Back to List</a>
 </div>
