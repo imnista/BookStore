@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using SendGrid.Helpers.Mail;
+using Microsoft.Extensions.Logging;
 
 namespace BeckmanCoulter.BookStore.Controllers
 {
@@ -23,12 +24,14 @@ namespace BeckmanCoulter.BookStore.Controllers
     private readonly ApplicationDbContext _context;
     private readonly IHostingEnvironment _env;
     private readonly IMailQueueService _mailQueueService;
+    private readonly ILogger<BooksController> _logger;
 
-    public BooksController(ApplicationDbContext context, IHostingEnvironment env, IMailQueueService mailQueueService)
+    public BooksController(ApplicationDbContext context, IHostingEnvironment env, IMailQueueService mailQueueService, ILogger<BooksController> logger)
     {
       _context = context;
       _env = env;
       _mailQueueService = mailQueueService;
+      _logger = logger;
     }
 
     // GET: Books
@@ -38,7 +41,7 @@ namespace BeckmanCoulter.BookStore.Controllers
     }
 
     // GET: Books/Details/5
-    public async Task<IActionResult> Details(Guid? id)
+    public async Task<IActionResult> Details(int? id)
     {
       if (id == null)
       {
@@ -60,9 +63,35 @@ namespace BeckmanCoulter.BookStore.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Details(Book model)
     {
-      if (ModelState.IsValid)
-      {
+      var book = await _context.BookEntity.Where(c => c.Id == model.Id).FirstOrDefaultAsync();
 
+      if (book.Id > 0)
+      {
+        using (var transaction = _context.Database.BeginTransaction())
+        {
+          try
+          {
+            var bookBorrow = new BookBorrow
+            {
+              BookId = book.Id,
+              Email = Environment.UserName,
+              BorrowTime = DateTime.Now
+            };
+
+            _context.Add(bookBorrow);
+            await _context.SaveChangesAsync();
+
+            book.Quantity = book.Quantity - 1;
+            _context.Update(book);
+            await _context.SaveChangesAsync();
+
+            transaction.Commit();
+          }
+          catch (Exception ex)
+          {
+            _logger.LogError(ex, "Borrow book errors.");
+          }
+        }
       }
 
       return RedirectToAction(nameof(Index));
@@ -88,13 +117,18 @@ namespace BeckmanCoulter.BookStore.Controllers
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(BookViewModels bookViewModels)
     {
-      if (ModelState.IsValid)
+      if (!ModelState.IsValid)
+      {
+        _logger.LogError($"Create book model is invalid. Model: {bookViewModels}");
+        return RedirectToAction(nameof(Index));
+      }
+
+      try
       {
         var fileName = await ProcessBookCoverImage(bookViewModels);
 
         var bookEntity = new Book
         {
-          Id = Guid.NewGuid(),
           UserName = Environment.UserName,
           CreateTime = DateTime.Now,
           UpdateTime = DateTime.Now,
@@ -107,6 +141,11 @@ namespace BeckmanCoulter.BookStore.Controllers
         _context.Add(bookEntity);
         await _context.SaveChangesAsync();
       }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "Create book errors.");
+      }
+
       return RedirectToAction(nameof(Index));
     }
 
@@ -135,7 +174,6 @@ namespace BeckmanCoulter.BookStore.Controllers
         {
           var bookEntity = new Book
           {
-            Id = Guid.NewGuid(),
             UserName = dt.Rows[i]["UserName"].ToString(),
             CreateTime = DateTime.Now,
             UpdateTime = DateTime.Now,
@@ -178,7 +216,7 @@ namespace BeckmanCoulter.BookStore.Controllers
     // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(Guid id, [Bind("Id,Name,Quantity,Image,Description,UserName")] Book book)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Quantity,Image,Description,UserName")] Book book)
     {
       if (id != book.Id)
       {
@@ -212,7 +250,7 @@ namespace BeckmanCoulter.BookStore.Controllers
     }
 
     // GET: Books/Delete/5
-    public async Task<IActionResult> Delete(Guid? id)
+    public async Task<IActionResult> Delete(int? id)
     {
       if (id == null)
       {
@@ -240,7 +278,7 @@ namespace BeckmanCoulter.BookStore.Controllers
       return RedirectToAction(nameof(Index));
     }
 
-    private bool BookExists(Guid id)
+    private bool BookExists(int id)
     {
       return _context.BookEntity.Any(e => e.Id == id);
     }

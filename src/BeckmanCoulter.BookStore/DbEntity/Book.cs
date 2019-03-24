@@ -8,7 +8,7 @@ namespace BeckmanCoulter.BookStore.DbEntity
   public class Book
   {
     [Key]
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     [Column("Name", TypeName = "nvarchar(200)")]
     public string Name { get; set; }
