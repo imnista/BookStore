@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,7 +17,7 @@
   </environment>
 </head>
 <body>
-  <nav class="navbar navbar-inverse navbar-fixed-top">
+  <nav class="navbar navbar-fixed-top">
     <div class="container">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -26,14 +26,16 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">BeckmanCoulter.BookStore</a>
+        <a class="bec-logo" asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">
+          <img src="~/images/logo.svg" />
+        </a>
       </div>
       <div class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
           <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-          <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-          <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
           <li><a asp-area="" asp-controller="Books" asp-action="Index">Book</a></li>
+          <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
+          <!-- <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li> -->
         </ul>
         <partial name="_LoginPartial" />
       </div>
@@ -44,9 +46,9 @@
 
   <div class="container body-content">
     @RenderBody()
-    <hr />
+    <br>
     <footer>
-      <p>&copy; 2018 - BeckmanCoulter.BookStore</p>
+      <p>© 2000-2019 Beckman Coulter, Inc. All rights reserved.</p>
     </footer>
   </div>
 
