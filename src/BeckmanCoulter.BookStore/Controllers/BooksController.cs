@@ -37,8 +37,13 @@ namespace BeckmanCoulter.BookStore.Controllers
     // GET: Books
     public async Task<IActionResult> Index()
     {
-      return View(await _context.BookEntity.ToListAsync());
-    }
+            List<Book> list = await _context.BookEntity.ToListAsync();
+            foreach (var item in list)
+            {
+                item.Image = @"/bookfiles/" + item.Image;
+            }
+            return View(list);
+        }
 
     // GET: Books/Details/5
     public async Task<IActionResult> Details(int? id)
