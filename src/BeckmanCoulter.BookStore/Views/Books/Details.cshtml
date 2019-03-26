@@ -8,9 +8,9 @@
 
 <form asp-action="Details">
   <div class="container">
-    <h3 style="margin-top: 10px; margin-bottom: 10px;">
+    <div style="margin-top: 20px; margin-bottom: 20px; font-size: 20px;">
       @Html.DisplayFor(model => model.Name)
-    </h3>
+    </div>
     <div>
       <img src="@Url.Content(Model.Image)" style="width: 300px;" />
     </div>
@@ -18,10 +18,32 @@
     <div style="margin-top: 20px; line-height: 25px; font-size: 13px;">
       @Html.DisplayFor(model => model.Description)
     </div>
+
+    @if (ViewBag.BorrowListCount > 0)
+    {
+      <table class="table" style="margin-top: 20px; font-size: 13px;">
+        <thead>
+          <tr>
+            <th scope="col">借书者</th>
+            <th scope="col">借书时间</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var item in ViewBag.BorrowList)
+          {
+            <tr>
+              <td>@item.BorrowEmail</td>
+              <td>@item.BorrowTime</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+
     <div style="margin-top: 20px; margin-bottom: 20px;">
       @if (Model.Quantity > 0)
       {
-        <button type="submit" class="btn btn-success">借一下</button>
+        <button type="submit" class="btn btn-success">借书</button>
       }
       else
       {

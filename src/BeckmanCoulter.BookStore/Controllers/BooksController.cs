@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace BeckmanCoulter.BookStore.Controllers
@@ -50,11 +51,11 @@ namespace BeckmanCoulter.BookStore.Controllers
 
       if (pageIndex == 1)
       {
-        bookList = bookList.Take(PageCount);
+        bookList = bookList.Take(PageCount).OrderByDescending(c => c.Id);
         return View(bookList);
       }
 
-      bookList = bookList.Skip((pageIndex - 1) * PageCount).Take(PageCount);
+      bookList = bookList.Skip((pageIndex - 1) * PageCount).Take(PageCount).OrderByDescending(c => c.Id);
       return View(bookList);
     }
 
@@ -74,6 +75,21 @@ namespace BeckmanCoulter.BookStore.Controllers
       }
 
       book.Image = BookImagePath + book.Image;
+
+      var bookBorrow = from c in _context.BookBorrowEntity
+                       join b in _context.BookEntity on c.BookId equals b.Id
+                       where c.BookId.Equals(book.Id) && c.ReturnTime.Equals(Convert.ToDateTime("0001-01-01 00:00:00"))
+                       orderby c.BorrowTime descending
+                       select new BookBorrowViewModel
+                       {
+                         BookName = b.Name,
+                         BorrowEmail = c.Email,
+                         BorrowTime = c.BorrowTime
+                       };
+
+      ViewBag.BorrowList = bookBorrow;
+      ViewBag.BorrowListCount = bookBorrow.Count();
+
       return View(book);
     }
 
@@ -98,7 +114,7 @@ namespace BeckmanCoulter.BookStore.Controllers
             var bookBorrow = new BookBorrow
             {
               BookId = book.Id,
-              Email = Environment.UserName,
+              Email = GetUserEmail(),
               BorrowTime = DateTime.Now
             };
 
@@ -158,7 +174,7 @@ namespace BeckmanCoulter.BookStore.Controllers
 
         var bookEntity = new Book
         {
-          UserName = Environment.UserName,
+          UserName = GetUserEmail(),
           CreateTime = DateTime.Now,
           UpdateTime = DateTime.Now,
           Description = bookViewModels.Description,
@@ -176,6 +192,15 @@ namespace BeckmanCoulter.BookStore.Controllers
       }
 
       return RedirectToAction(nameof(Index));
+    }
+
+    private string GetUserEmail()
+    {
+      var email = string.Empty;
+      if (User.Identity is ClaimsIdentity identity)
+        email = identity.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value;
+
+      return email;
     }
 
     private async Task<string> ProcessBookCoverImage(BookViewModels bookViewModels)
@@ -218,12 +243,10 @@ namespace BeckmanCoulter.BookStore.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Quantity,Image,Description,UserName")] Book book)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Image,Quantity,Description")] Book book)
     {
       if (id != book.Id)
-      {
         return NotFound();
-      }
 
       if (ModelState.IsValid)
       {
@@ -342,5 +365,54 @@ namespace BeckmanCoulter.BookStore.Controllers
     }
 
     #endregion
+
+    public async Task<IActionResult> MyBook()
+    {
+      var bookBorrow = from c in _context.BookBorrowEntity
+                       join b in _context.BookEntity on c.BookId equals b.Id
+                       orderby c.ReturnTime, c.BorrowTime descending
+                       select new MyBookViewModel
+                       {
+                         BookId = b.Id,
+                         BookBorrowId = c.Id,
+                         BookName = b.Name,
+                         BorrowTime = c.BorrowTime,
+                         ReturnTime = c.ReturnTime
+                       };
+
+      var list = await bookBorrow.ToListAsync();
+      return View(list);
+    }
+
+    public async Task<IActionResult> BackBook(int bookid, int bookborrowid)
+    {
+      using (var transaction = _context.Database.BeginTransaction())
+      {
+        try
+        {
+          // back book
+          var bookBorrowEntity = await _context.BookBorrowEntity.FindAsync(bookborrowid);
+          bookBorrowEntity.ReturnTime = DateTime.Now;
+
+          _context.Update(bookBorrowEntity);
+          await _context.SaveChangesAsync();
+
+          // return quantity
+          var bookEntity = await _context.BookEntity.FindAsync(bookid);
+          bookEntity.Quantity = bookEntity.Quantity + 1;
+
+          _context.Update(bookBorrowEntity);
+          await _context.SaveChangesAsync();
+
+          transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Back book errors.");
+        }
+      }
+
+      return RedirectToAction(nameof(MyBook));
+    }
   }
 }
