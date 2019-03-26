@@ -28,7 +28,7 @@
           <h4 class="media-heading">@item.Name </h4>
         </div>
         <div class="col-md-2">
-          @if (role == adminName)
+          @if (role != null && role == adminName)
           {
             <div class="float-right">
               <a asp-action="Edit" class="btn btn-outline-success" asp-route-id="@item.Id">编辑</a>
