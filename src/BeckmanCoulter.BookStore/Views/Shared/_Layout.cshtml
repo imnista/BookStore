@@ -1,72 +1,57 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+<!DOCTYPE html>
 <html lang="en">
+@{
+  var identity = (ClaimsIdentity)User.Identity;
+  var role = identity.FindFirst(ClaimTypes.Role) != null ? identity.FindFirst(ClaimTypes.Role).Value : "";
+  const string adminName = "Administrator";
+}
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - BeckmanCoulter.BookStore</title>
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="~/css/site.css" />
-    </environment>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@ViewData["Title"] - BeckmanCoulter.BookStore</title>
+  <environment include="Development">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+  </environment>
 </head>
 <body>
-    <nav class="navbar fixed-top navbar-light navbar-expand">
-        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/logo.svg" /></a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item @(ViewData["Route"].ToString() == "home" ? "active" : "")">
-                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                </li>
-                <li class='nav-item @(ViewData["Route"].ToString() == "book" ? "active" : "")'>
-                    <a class="nav-link" asp-area="" asp-controller="Books" asp-action="Index">Book</a>
-                </li>
-                <li class='nav-item @(ViewData["Route"].ToString() == "about" ? "active" : "")'>
-                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">About</a>
-                </li>
-            </ul>
-        </div>
-        <partial name="_LoginPartial" />
-    </nav>
-    <!--nav class="navbar fixed-top navbar-expand">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="bec-logo" asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">
-            <img src="~/images/logo.svg" />
-          </a>
-        </div>
-        <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li class='@(ViewData["Route"].ToString() == "home" ? "active" : "")'><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-            <li class='@(ViewData["Route"].ToString() == "book" ? "active" : "")'><a asp-area="" asp-controller="Books" asp-action="Index">Book</a></li>
-            <li class='@(ViewData["Route"].ToString() == "about" ? "active" : "")'><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
-          </ul>
-          <partial name="_LoginPartial" />
-        </div>
-      </div>
-    </nav-->
-
-    <partial name="_CookieConsentPartial" />
-
-    <div class="container body-content">
-        @RenderBody()
-        <br>
-        @*<footer>
-              <p>© 2000-2019 Beckman Coulter, Inc. All rights reserved.</p>
-            </footer>*@
+  <nav class="navbar fixed-top navbar-light navbar-expand">
+    <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><img src="~/images/logo.svg" /></a>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item @(ViewData["Route"].ToString() == "home" ? "active" : "")">
+          <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+        </li>
+        <li class="nav-item @(ViewData["Route"].ToString() == "book" ? "active" : "")">
+          <a class="nav-link" asp-area="" asp-controller="Books" asp-action="Index">Book</a>
+        </li>
+        @if (role == adminName)
+        {
+          <li class='nav-item @(ViewData["Route"].ToString() == "uploadlist" ? "active" : "")'>
+            <a class="nav-link" asp-area="" asp-controller="Books" asp-action="UploadList">Upload</a>
+          </li>
+        }
+      </ul>
     </div>
+    <partial name="_LoginPartial" />
+  </nav>
+  <partial name="_CookieConsentPartial" />
+  <div class="container body-content">
+    @RenderBody()
+    <br>
+    @*<footer>
+        <p>© 2000-2019 Beckman Coulter, Inc. All rights reserved.</p>
+      </footer>*@
+  </div>
 
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-        <script src="~/js/site.js" asp-append-version="true"></script>
-    </environment>
+  <environment include="Development">
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+  </environment>
 
-    @RenderSection("Scripts", required: false)
+  @RenderSection("Scripts", required: false)
 </body>
 </html>

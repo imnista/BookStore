@@ -24,7 +24,9 @@ namespace BeckmanCoulter.BookStore.Controllers
     private readonly IHostingEnvironment _env;
     private readonly IMailQueueService _mailQueueService;
     private readonly ILogger<BooksController> _logger;
-    public const string BookImagePath = "/bookfiles/";
+
+    private const string BookImagePath = "/bookfiles/";
+    private const int PageCount = 10;
 
     public BooksController(ApplicationDbContext context, IHostingEnvironment env, IMailQueueService mailQueueService, ILogger<BooksController> logger)
     {
@@ -34,29 +36,40 @@ namespace BeckmanCoulter.BookStore.Controllers
       _logger = logger;
     }
 
-    // GET: Books
-    public async Task<IActionResult> Index()
+    #region Index
+
+    public IActionResult Index(int pageIndex = 1)
     {
-      var bookList = await _context.BookEntity.ToListAsync();
+      var bookList = _context.BookEntity.AsQueryable();
       foreach (var item in bookList)
       {
         item.Image = BookImagePath + item.Image;
       }
+      ViewBag.PageCount = (bookList.Count() + PageCount - 1) / PageCount;
+      ViewBag.BookListCount = bookList.Count();
+
+      if (pageIndex == 1)
+      {
+        bookList = bookList.Take(PageCount);
+        return View(bookList);
+      }
+
+      bookList = bookList.Skip((pageIndex - 1) * PageCount).Take(PageCount);
       return View(bookList);
     }
 
-    // GET: Books/Details/5
-    public async Task<IActionResult> Details(int? id)
-    {
-      if (id == null)
-      {
-        return NotFound();
-      }
+    #endregion
 
+    #region Detail
+
+    public async Task<IActionResult> Details(int id)
+    {
       var book = await _context.BookEntity
-          .FirstOrDefaultAsync(m => m.Id == id);
+        .FirstOrDefaultAsync(m => m.Id == id);
+
       if (book == null)
       {
+        _logger.LogCritical($"Cannot get book on detail page. Id: {id}");
         return NotFound();
       }
 
@@ -64,18 +77,24 @@ namespace BeckmanCoulter.BookStore.Controllers
       return View(book);
     }
 
+    /// <summary>
+    /// Borrow book
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [HttpPost, ActionName("Details")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Details(Book model)
     {
       var book = await _context.BookEntity.Where(c => c.Id == model.Id).FirstOrDefaultAsync();
 
-      if (book.Id > 0)
+      if (book != null)
       {
         using (var transaction = _context.Database.BeginTransaction())
         {
           try
           {
+            // add borrow rows
             var bookBorrow = new BookBorrow
             {
               BookId = book.Id,
@@ -86,6 +105,7 @@ namespace BeckmanCoulter.BookStore.Controllers
             _context.Add(bookBorrow);
             await _context.SaveChangesAsync();
 
+            // remove book quantity
             book.Quantity = book.Quantity - 1;
             _context.Update(book);
             await _context.SaveChangesAsync();
@@ -98,11 +118,18 @@ namespace BeckmanCoulter.BookStore.Controllers
           }
         }
       }
+      else
+      {
+        _logger.LogCritical($"Cannot get book on borrow submit. Model: {model}");
+      }
 
       return RedirectToAction(nameof(Index));
     }
 
-    // GET: Books/Create
+    #endregion
+
+    #region Create
+
     public IActionResult Create()
     {
       var from = new EmailAddress("lfu01@beckman.com", "Lynn");
@@ -115,9 +142,6 @@ namespace BeckmanCoulter.BookStore.Controllers
       return View();
     }
 
-    // POST: Books/Create
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(BookViewModels bookViewModels)
@@ -154,147 +178,6 @@ namespace BeckmanCoulter.BookStore.Controllers
       return RedirectToAction(nameof(Index));
     }
 
-    public async Task<IActionResult> UploadList(List<IFormFile> files)
-    {
-      if (files == null || files.Count == 0)
-        return RedirectToAction(nameof(Index));
-
-      try
-      {
-        var req = this.Request;
-
-        var file = files[0];
-
-        if (!file.FileName.EndsWith(".xlsx"))
-          return RedirectToAction(nameof(Index));
-
-        DataTable dt;
-        using (Stream s = file.OpenReadStream())
-        {
-          dt = NPOIHelper.ReadStreamToDataTable(s, null, true);
-        }
-
-        int rowCount = dt.Rows.Count;
-        for (int i = 0; i < rowCount; i++)
-        {
-          var bookEntity = new Book
-          {
-            UserName = dt.Rows[i]["UserName"].ToString(),
-            CreateTime = DateTime.Now,
-            UpdateTime = DateTime.Now,
-            Description = dt.Rows[i]["Description"].ToString(),
-            Name = dt.Rows[i]["Name"].ToString(),
-            Quantity = int.Parse(dt.Rows[i]["Quantity"].ToString()),
-            Image = string.Empty,
-          };
-
-          _context.Add(bookEntity);
-        }
-        await _context.SaveChangesAsync();
-      }
-      catch (Exception e)
-      {
-        RedirectToAction(nameof(Index));
-      }
-
-      return RedirectToAction(nameof(Index));
-    }
-
-    // GET: Books/Edit/5
-    public async Task<IActionResult> Edit(int? id)
-    {
-      if (id == null)
-      {
-        return NotFound();
-      }
-
-      var book = await _context.BookEntity.FindAsync(id);
-      if (book == null)
-      {
-        return NotFound();
-      }
-      return View(book);
-    }
-
-    // POST: Books/Edit/5
-    // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-    // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Quantity,Image,Description,UserName")] Book book)
-    {
-      if (id != book.Id)
-      {
-        return NotFound();
-      }
-
-      if (ModelState.IsValid)
-      {
-        try
-        {
-          book.UserName = Environment.UserName;
-          book.UpdateTime = DateTime.Now;
-
-          _context.Update(book);
-          await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-          if (!BookExists(book.Id))
-          {
-            return NotFound();
-          }
-          else
-          {
-            throw;
-          }
-        }
-        return RedirectToAction(nameof(Index));
-      }
-      return View(book);
-    }
-
-    // GET: Books/Delete/5
-    public async Task<IActionResult> Delete(int? id)
-    {
-      if (id == null)
-        return NotFound();
-
-      var book = await _context.BookEntity
-          .FirstOrDefaultAsync(m => m.Id == id);
-      if (book == null)
-        return NotFound();
-
-      book.Image = BookImagePath + book.Image;
-      return View(book);
-    }
-
-    // POST: Books/Delete/5
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-      var book = await _context.BookEntity.FindAsync(id);
-      if (book.Id > 0)
-      {
-        var imgPath = _env.WebRootPath + BookImagePath + book.Image;
-        if (System.IO.File.Exists(imgPath))
-        {
-          System.IO.File.Delete(imgPath);
-        }
-
-        _context.BookEntity.Remove(book);
-        await _context.SaveChangesAsync();
-      }
-
-      return RedirectToAction(nameof(Index));
-    }
-
-    private bool BookExists(int id)
-    {
-      return _context.BookEntity.Any(e => e.Id == id);
-    }
-
     private async Task<string> ProcessBookCoverImage(BookViewModels bookViewModels)
     {
       if (null == bookViewModels.Files)
@@ -317,5 +200,147 @@ namespace BeckmanCoulter.BookStore.Controllers
         return fileName;
       }
     }
+
+    #endregion
+
+    #region Edit
+
+    public async Task<IActionResult> Edit(int id)
+    {
+      var book = await _context.BookEntity.FindAsync(id);
+      if (book == null)
+      {
+        _logger.LogCritical($"Cannot get book on edit page. Id: {id}");
+        return NotFound();
+      }
+      return View(book);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Quantity,Image,Description,UserName")] Book book)
+    {
+      if (id != book.Id)
+      {
+        return NotFound();
+      }
+
+      if (ModelState.IsValid)
+      {
+        try
+        {
+          book.UserName = Environment.UserName;
+          book.UpdateTime = DateTime.Now;
+
+          _context.Update(book);
+          await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, $"Edit book errors. Model: {book}");
+        }
+      }
+
+      return RedirectToAction(nameof(Index));
+    }
+
+    #endregion
+
+    #region Delete
+
+    public async Task<IActionResult> Delete(int id)
+    {
+      var book = await _context.BookEntity
+          .FirstOrDefaultAsync(m => m.Id == id);
+      if (book == null)
+      {
+        _logger.LogCritical($"Cannot get book on delete page. Id: {id}");
+        return NotFound();
+      }
+
+      book.Image = BookImagePath + book.Image;
+      return View(book);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+      var book = await _context.BookEntity.FindAsync(id);
+      if (book == null)
+      {
+        _logger.LogCritical($"Cannot get book on delete confirm. Id: {id}");
+        return NotFound();
+      }
+
+      var imgPath = _env.WebRootPath + BookImagePath + book.Image;
+      if (System.IO.File.Exists(imgPath))
+        System.IO.File.Delete(imgPath);
+
+      _context.BookEntity.Remove(book);
+      await _context.SaveChangesAsync();
+
+      return RedirectToAction(nameof(Index));
+    }
+
+    #endregion
+
+    #region Upload
+
+    public IActionResult UploadList()
+    {
+      return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadList(List<IFormFile> files)
+    {
+      if (files == null || files.Count == 0)
+        return RedirectToAction(nameof(Index));
+
+      try
+      {
+        var file = files[0];
+
+        if (!file.FileName.EndsWith(".xlsx"))
+        {
+          _logger.LogWarning($"UploadList extension is not xlsx. File name: {file.FileName}");
+          return RedirectToAction(nameof(Index));
+        }
+
+        DataTable dt;
+        using (var s = file.OpenReadStream())
+        {
+          dt = NPOIHelper.ReadStreamToDataTable(s);
+        }
+
+        var rowCount = dt.Rows.Count;
+        for (var i = 0; i < rowCount; i++)
+        {
+          var bookEntity = new Book
+          {
+            UserName = dt.Rows[i]["UserName"].ToString(),
+            CreateTime = DateTime.Now,
+            UpdateTime = DateTime.Now,
+            Description = dt.Rows[i]["Description"].ToString(),
+            Name = dt.Rows[i]["Name"].ToString(),
+            Quantity = int.Parse(dt.Rows[i]["Quantity"].ToString()),
+            Image = string.Empty,
+          };
+
+          _context.Add(bookEntity);
+        }
+        await _context.SaveChangesAsync();
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "UploadList errors.");
+      }
+
+      return RedirectToAction(nameof(Index));
+    }
+
+    #endregion
   }
 }

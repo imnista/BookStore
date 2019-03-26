@@ -8,14 +8,14 @@
 
 <form asp-action="Details">
   <div class="container">
-    <h1 style="margin-top: 10px; margin-bottom: 10px;">
+    <h3 style="margin-top: 10px; margin-bottom: 10px;">
       @Html.DisplayFor(model => model.Name)
-    </h1>
+    </h3>
     <div>
       <img src="@Url.Content(Model.Image)" style="width: 300px;" />
     </div>
 
-    <div style="margin-top: 20px; line-height: 25px;">
+    <div style="margin-top: 20px; line-height: 25px; font-size: 13px;">
       @Html.DisplayFor(model => model.Description)
     </div>
     <div style="margin-top: 20px; margin-bottom: 20px;">
