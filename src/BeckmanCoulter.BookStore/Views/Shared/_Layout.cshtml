@@ -11,10 +11,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>@ViewData["Title"] - BeckmanCoulter.BookStore</title>
-  <environment include="Development">
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
-  </environment>
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
   <nav class="navbar fixed-top navbar-light navbar-expand">
@@ -43,18 +41,11 @@
   <partial name="_CookieConsentPartial" />
   <div class="container body-content">
     @RenderBody()
-    <br>
-    @*<footer>
-        <p>© 2000-2019 Beckman Coulter, Inc. All rights reserved.</p>
-      </footer>*@
   </div>
 
-  <environment include="Development">
-    <script src="~/lib/jquery/dist/jquery.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-  </environment>
-
+  <script src="~/lib/jquery/dist/jquery.js"></script>
+  <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="~/js/site.js" asp-append-version="true"></script>
   @RenderSection("Scripts", required: false)
 </body>
 </html>
