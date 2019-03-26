@@ -1,104 +1,76 @@
-﻿@model IEnumerable<BeckmanCoulter.BookStore.DbEntity.Book>
+﻿@using System.Security.Claims
+@model IEnumerable<BeckmanCoulter.BookStore.DbEntity.Book>
 
 @{
-    ViewData["Title"] = "Index";
-    ViewData["Route"] = "book";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+  ViewData["Title"] = "Index";
+  ViewData["Route"] = "book";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+
+  var identity = (ClaimsIdentity)User.Identity;
+  var role = identity.FindFirst(ClaimTypes.Role).Value;
+  var adminName = "Administrator";
 }
-
-<h2>Index</h2>
-
 <p>
-    <a asp-action="Create">Create New</a>
+  <a asp-action="Create">Create New</a>
 </p>
 <hr />
 @foreach (var item in Model)
 {
-    <div class="media">
-        <div class="media-left">
-            <a href="/Books/Details/@item.Id">
-                <img class="media-object img-thumbnail" width="120" height="120" src="@item.Image" alt="Responsive image">
-            </a>
-        </div>
-        <div class="media-body">
-            <h4 class="media-heading">@item.Name  </h4>
-            <div class="row">
-                <div class="col-md-8">
-                    <p>Quantity: @item.Quantity  | UpdateBy: @item.UserName</p>
-                    <p>@item.Description</p>
-                </div>
-                <div class="col-md-4 text-center">
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </div>
-            </div>
-
-
-        </div>
+  <div class="media">
+    <div class="media-left">
+      <a href="/Books/Details/@item.Id">
+        <img class="media-object img-thumbnail" width="120" height="120" src="@item.Image" style="margin-right: 10px;" alt="Responsive image">
+      </a>
     </div>
-    <hr />
+    <div class="media-body">
+      <div class="row">
+        <div class="col-md-10">
+          <h4 class="media-heading">@item.Name </h4>
+        </div>
+        <div class="col-md-2">
+          @if (role == adminName)
+          {
+            <div class="float-right">
+              <a asp-action="Edit" class="btn btn-outline-success" asp-route-id="@item.Id">编辑</a>
+              <a asp-action="Delete" class="btn btn-outline-danger" asp-route-id="@item.Id">删除</a>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          @if (item.Quantity > 0)
+          {
+            <div style="font-size: 13px;margin-bottom: 10px; padding-left: 2px;">数量: @item.Quantity</div>
+          }
+          else
+          {
+            <div style="font-size: 13px; color: red; margin-bottom: 10px;padding-left: 2px;">此书没有库存了</div>
+          }
+          <p>@item.Description</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr />
 }
-@*<table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Quantity)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Description)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.UserName)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        <a href="/Books/Details/@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Quantity)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.UserName)
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>*@
 
 <div class="panel panel-default">
-    <div class="panel-heading ">Upload Book List</div>
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-md-4">
-                <form asp-action="UploadList" asp-controller="Books" enctype="multipart/form-data" method="post">
-
-                    <div class="form-group">
-                        <label a class="control-label"></label>
-                        <input type="file" name="files" />
-                    </div>
-
-                    <div class="form-group">
-                        <input type="submit" value="UploadList" class="btn btn-primary" />
-                    </div>
-                </form>
-            </div>
-        </div>
+  <div class="panel-heading ">Upload Book List</div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-4">
+        <form asp-action="UploadList" asp-controller="Books" enctype="multipart/form-data" method="post">
+          <div class="form-group">
+            <label a class="control-label"></label>
+            <input type="file" name="files" />
+          </div>
+          <div class="form-group">
+            <input type="submit" value="UploadList" class="btn btn-primary" />
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 

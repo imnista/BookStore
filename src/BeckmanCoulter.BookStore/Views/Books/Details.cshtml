@@ -7,31 +7,27 @@
 }
 
 <form asp-action="Details">
-
   <div class="container">
-
-    <h1>
+    <h1 style="margin-top: 10px; margin-bottom: 10px;">
       @Html.DisplayFor(model => model.Name)
     </h1>
     <div>
-      <img src="@Url.Content(Model.Image)" />
+      <img src="@Url.Content(Model.Image)" style="width: 300px;" />
     </div>
 
     <div style="margin-top: 20px; line-height: 25px;">
       @Html.DisplayFor(model => model.Description)
     </div>
-
-
     <div style="margin-top: 20px; margin-bottom: 20px;">
       @if (Model.Quantity > 0)
       {
-        <button type="button" class="btn btn-success">Borrow</button>
+        <button type="submit" class="btn btn-success">借一下</button>
       }
       else
       {
-        <span style="color: red;">这本书没有库存了！</span>
+        <div style="color: red; margin-bottom: 20px;">这本书没有库存了！</div>
       }
-        <a href="/books/index" class="btn btn-secondary active" role="button" aria-pressed="true">Back</a>
+      <a href="/books/index" class="btn btn btn-light" role="button" aria-pressed="true">返回</a>
     </div>
   </div>
 </form>

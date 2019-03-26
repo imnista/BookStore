@@ -1,21 +1,20 @@
 ﻿using BeckmanCoulter.BookStore.Data;
 using BeckmanCoulter.BookStore.DbEntity;
+using BeckmanCoulter.BookStore.Helper;
+using BeckmanCoulter.BookStore.Mail;
+using BeckmanCoulter.BookStore.ViewModels;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using BeckmanCoulter.BookStore.Helper;
-using BeckmanCoulter.BookStore.Mail;
-using BeckmanCoulter.BookStore.ViewModels;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using SendGrid.Helpers.Mail;
-using Microsoft.Extensions.Logging;
 
 namespace BeckmanCoulter.BookStore.Controllers
 {
@@ -25,6 +24,7 @@ namespace BeckmanCoulter.BookStore.Controllers
     private readonly IHostingEnvironment _env;
     private readonly IMailQueueService _mailQueueService;
     private readonly ILogger<BooksController> _logger;
+    public const string BookImagePath = "/bookfiles/";
 
     public BooksController(ApplicationDbContext context, IHostingEnvironment env, IMailQueueService mailQueueService, ILogger<BooksController> logger)
     {
@@ -37,13 +37,13 @@ namespace BeckmanCoulter.BookStore.Controllers
     // GET: Books
     public async Task<IActionResult> Index()
     {
-            List<Book> list = await _context.BookEntity.ToListAsync();
-            foreach (var item in list)
-            {
-                item.Image = @"/bookfiles/" + item.Image;
-            }
-            return View(list);
-        }
+      var bookList = await _context.BookEntity.ToListAsync();
+      foreach (var item in bookList)
+      {
+        item.Image = BookImagePath + item.Image;
+      }
+      return View(bookList);
+    }
 
     // GET: Books/Details/5
     public async Task<IActionResult> Details(int? id)
@@ -60,7 +60,7 @@ namespace BeckmanCoulter.BookStore.Controllers
         return NotFound();
       }
 
-      book.Image = @"\bookfiles\" + book.Image;
+      book.Image = BookImagePath + book.Image;
       return View(book);
     }
 
@@ -258,28 +258,35 @@ namespace BeckmanCoulter.BookStore.Controllers
     public async Task<IActionResult> Delete(int? id)
     {
       if (id == null)
-      {
         return NotFound();
-      }
 
       var book = await _context.BookEntity
           .FirstOrDefaultAsync(m => m.Id == id);
       if (book == null)
-      {
         return NotFound();
-      }
 
+      book.Image = BookImagePath + book.Image;
       return View(book);
     }
 
     // POST: Books/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(Guid id)
+    public async Task<IActionResult> DeleteConfirmed(int id)
     {
       var book = await _context.BookEntity.FindAsync(id);
-      _context.BookEntity.Remove(book);
-      await _context.SaveChangesAsync();
+      if (book.Id > 0)
+      {
+        var imgPath = _env.WebRootPath + BookImagePath + book.Image;
+        if (System.IO.File.Exists(imgPath))
+        {
+          System.IO.File.Delete(imgPath);
+        }
+
+        _context.BookEntity.Remove(book);
+        await _context.SaveChangesAsync();
+      }
+
       return RedirectToAction(nameof(Index));
     }
 
@@ -296,7 +303,7 @@ namespace BeckmanCoulter.BookStore.Controllers
       }
       else
       {
-        var filePath = _env.WebRootPath + @"\bookfiles\";
+        var filePath = _env.WebRootPath + BookImagePath;
         var fileName = Guid.NewGuid() + Path.GetExtension(bookViewModels.Files.FileName);
 
         if (bookViewModels.Files.Length > 0)

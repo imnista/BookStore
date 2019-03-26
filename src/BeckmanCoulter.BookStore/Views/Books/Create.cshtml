@@ -6,41 +6,34 @@
   Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Create</h2>
-
-<h4>Book</h4>
-<hr />
 <div class="row">
   <div class="col-md-4">
     <form asp-action="Create" asp-controller="Books" enctype="multipart/form-data" method="post">
       <div asp-validation-summary="ModelOnly" class="text-danger"></div>
       <div class="form-group">
-        <label asp-for="Name" class="control-label"></label>
+        <label asp-for="Name" class="control-label">名字</label>
         <input asp-for="Name" class="form-control" />
         <span asp-validation-for="Name" class="text-danger"></span>
       </div>
       <div class="form-group">
-        <label asp-for="Quantity" class="control-label"></label>
+        <label asp-for="Quantity" class="control-label">数量</label>
         <input asp-for="Quantity" class="form-control" />
         <span asp-validation-for="Quantity" class="text-danger"></span>
       </div>
       <div class="form-group">
-        <label asp-for="Files" class="control-label"></label>
-        <input type="file" name="Files" asp-for="Files"/>
+        <label asp-for="Files" class="control-label">图片</label>
+        <input type="file" name="Files" asp-for="Files" />
       </div>
       <div class="form-group">
-        <label asp-for="Description" class="control-label"></label>
-        <input asp-for="Description" class="form-control" />
+        <label asp-for="Description" class="control-label">描述</label>
+        <textarea asp-for="Description" class="form-control" rows="5"></textarea>
         <span asp-validation-for="Description" class="text-danger"></span>
       </div>
       <div class="form-group">
-        <input type="submit" value="Create" class="btn btn-default" />
+        <input type="submit" value="添加" class="btn btn-success" />
+        <a href="/books/index" class="btn btn btn-light" role="button" aria-pressed="true">返回</a>
       </div>
     </form>
   </div>
-</div>
-
-<div>
-  <a asp-action="Index">Back to List</a>
 </div>
 
