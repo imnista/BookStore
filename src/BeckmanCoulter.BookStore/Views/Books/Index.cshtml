@@ -7,7 +7,7 @@
   Layout = "~/Views/Shared/_Layout.cshtml";
 
   var identity = (ClaimsIdentity)User.Identity;
-  var role = identity.FindFirst(ClaimTypes.Role).Value;
+  var role = identity.FindFirst(ClaimTypes.Role) != null ? identity.FindFirst(ClaimTypes.Role).Value : "";
   var adminName = "Administrator";
 }
 <p>
@@ -28,7 +28,7 @@
           <h4 class="media-heading">@item.Name </h4>
         </div>
         <div class="col-md-2">
-          @if (role != null && role == adminName)
+          @if (role != "" && role == adminName)
           {
             <div class="float-right">
               <a asp-action="Edit" class="btn btn-outline-success" asp-route-id="@item.Id">编辑</a>
