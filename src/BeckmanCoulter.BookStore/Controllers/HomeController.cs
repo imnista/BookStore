@@ -15,7 +15,6 @@ namespace BeckmanCoulter.BookStore.Controllers
 
         public IActionResult Index()
         {
-
             _logger.LogDebug("view home page.");
             return View();
         }
