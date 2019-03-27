@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace BeckmanCoulter.BookStore.Models
+﻿namespace BeckmanCoulter.BookStore.Models
 {
     public class BookInfo
     {
