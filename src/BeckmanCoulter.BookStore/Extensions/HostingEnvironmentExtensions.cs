@@ -16,7 +16,7 @@ namespace BeckmanCoulter.BookStore.Extensions
         /// <returns></returns>
         public static IConfigurationRoot GetAppConfiguration(this IHostingEnvironment env)
         {
-            return AppConfiguration.Get(env.ContentRootPath, env.EnvironmentName);
+            return AppConfiguration.Get(env.ContentRootPath, env.EnvironmentName, env.IsDevelopment());
         }
     }
 }
