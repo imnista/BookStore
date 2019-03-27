@@ -1,0 +1,39 @@
+﻿@model IEnumerable<BeckmanCoulter.BookStore.ViewModels.MyBookViewModel>
+
+@{
+  ViewData["Title"] = "MyBook";
+  ViewData["Route"] = "mybook";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<table class="table" style="margin-top: 20px; font-size: 13px;">
+  <thead>
+    <tr>
+      <th scope="col">书名</th>
+      <th scope="col">借书时间</th>
+      <th scope="col">还书时间</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var item in Model)
+    {
+      <tr>
+        <td>@item.BookName</td>
+        <td>@item.BorrowTime</td>
+        <td>
+          @if (item.ReturnTime != Convert.ToDateTime("0001-01-01 00:00:00"))
+          {
+            @item.ReturnTime
+          }
+        </td>
+        <td>
+          @if (item.ReturnTime == Convert.ToDateTime("0001-01-01 00:00:00"))
+          {
+            <a href="/books/BackBook?bookid=@item.BookId&bookborrowid=@item.BookBorrowId" class="btn btn-success" role="button" aria-pressed="true">还书</a>
+          }
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

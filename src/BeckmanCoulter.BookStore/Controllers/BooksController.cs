@@ -3,7 +3,6 @@ using BeckmanCoulter.BookStore.DbEntity;
 using BeckmanCoulter.BookStore.Helper;
 using BeckmanCoulter.BookStore.Mail;
 using BeckmanCoulter.BookStore.ViewModels;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +13,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using SendGrid;
+using BeckmanCoulter.BookStore.Extensions;
+using Microsoft.AspNetCore.Hosting;
 
 namespace BeckmanCoulter.BookStore.Controllers
 {
@@ -25,7 +28,7 @@ namespace BeckmanCoulter.BookStore.Controllers
     private readonly IMailQueueService _mailQueueService;
     private readonly ILogger<BooksController> _logger;
 
-    private const string BookImagePath = "/bookfiles/";
+        private const string BookImagePath = "/bookfiles/";
     private const int PageCount = 10;
 
     public BooksController(ApplicationDbContext context, IHostingEnvironment env, IMailQueueService mailQueueService, ILogger<BooksController> logger)
@@ -40,22 +43,48 @@ namespace BeckmanCoulter.BookStore.Controllers
 
     public IActionResult Index(int pageIndex = 1)
     {
-      var bookList = _context.BookEntity.AsQueryable();
-      foreach (var item in bookList)
-      {
-        item.Image = BookImagePath + item.Image;
-      }
-      ViewBag.PageCount = (bookList.Count() + PageCount - 1) / PageCount;
-      ViewBag.BookListCount = bookList.Count();
+            /* 暂时屏蔽
+            #region 通过队列发邮件
+            var from = new EmailAddress("wfan@beckman.com", "Cass");
+            var subject = "Sending with SendGrid is Fun";
+            var to = new EmailAddress("wfan@beckman.com", "Cass");
+            var plainTextContent = "and easy to do anywhere, even with C#";
+            var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
+            var mail = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            _mailQueueService.SendMessage(mail);
+            #endregion
+            */
 
-      if (pageIndex == 1)
-      {
-        bookList = bookList.Take(PageCount);
+            #region 直接发邮件
+            var configuration = _env.GetAppConfiguration();
+            var apiKey = configuration["App:SendGrid:ApiKey"];
+            var sendGridClient = new SendGridClient(apiKey);
+            var from = new EmailAddress("lfu01@beckman.com", "Lynn");
+            var subject = "Sending with SendGrid is Fun";
+            var to = new EmailAddress("lfu01@beckman.com", "Lynn");
+            var plainTextContent = "and easy to do anywhere, even with C#";
+            var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
+            var mail = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            var response = sendGridClient.SendEmailAsync(mail).Result;
+            #endregion
+
+            var bookList = _context.BookEntity.AsQueryable();
+        foreach (var item in bookList)
+        {
+            item.Image = BookImagePath + item.Image;
+        }
+
+        ViewBag.PageCount = (bookList.Count() + PageCount - 1) / PageCount;
+        ViewBag.BookListCount = bookList.Count();
+
+        if (pageIndex == 1)
+        {
+            bookList = bookList.Take(PageCount).OrderByDescending(c => c.Id);
+            return View(bookList);
+        }
+
+        bookList = bookList.Skip((pageIndex - 1) * PageCount).Take(PageCount).OrderByDescending(c => c.Id);
         return View(bookList);
-      }
-
-      bookList = bookList.Skip((pageIndex - 1) * PageCount).Take(PageCount);
-      return View(bookList);
     }
 
     #endregion
@@ -74,6 +103,21 @@ namespace BeckmanCoulter.BookStore.Controllers
       }
 
       book.Image = BookImagePath + book.Image;
+
+      var bookBorrow = from c in _context.BookBorrowEntity
+                       join b in _context.BookEntity on c.BookId equals b.Id
+                       where c.BookId.Equals(book.Id) && c.ReturnTime.Equals(Convert.ToDateTime("0001-01-01 00:00:00"))
+                       orderby c.BorrowTime descending
+                       select new BookBorrowViewModel
+                       {
+                         BookName = b.Name,
+                         BorrowEmail = c.Email,
+                         BorrowTime = c.BorrowTime
+                       };
+
+      ViewBag.BorrowList = bookBorrow;
+      ViewBag.BorrowListCount = bookBorrow.Count();
+
       return View(book);
     }
 
@@ -98,7 +142,7 @@ namespace BeckmanCoulter.BookStore.Controllers
             var bookBorrow = new BookBorrow
             {
               BookId = book.Id,
-              Email = Environment.UserName,
+              Email = GetUserEmail(),
               BorrowTime = DateTime.Now
             };
 
@@ -132,13 +176,6 @@ namespace BeckmanCoulter.BookStore.Controllers
 
     public IActionResult Create()
     {
-      var from = new EmailAddress("lfu01@beckman.com", "Lynn");
-      var subject = "Sending with SendGrid is Fun";
-      var to = new EmailAddress("lfu01@beckman.com", "Lynn");
-      var plainTextContent = "and easy to do anywhere, even with C#";
-      var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
-      var mail = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-      _mailQueueService.SendMessage(mail);
       return View();
     }
 
@@ -158,7 +195,7 @@ namespace BeckmanCoulter.BookStore.Controllers
 
         var bookEntity = new Book
         {
-          UserName = Environment.UserName,
+          UserName = GetUserEmail(),
           CreateTime = DateTime.Now,
           UpdateTime = DateTime.Now,
           Description = bookViewModels.Description,
@@ -176,6 +213,15 @@ namespace BeckmanCoulter.BookStore.Controllers
       }
 
       return RedirectToAction(nameof(Index));
+    }
+
+    private string GetUserEmail()
+    {
+      var email = string.Empty;
+      if (User.Identity is ClaimsIdentity identity)
+        email = identity.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value;
+
+      return email;
     }
 
     private async Task<string> ProcessBookCoverImage(BookViewModels bookViewModels)
@@ -218,12 +264,10 @@ namespace BeckmanCoulter.BookStore.Controllers
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Quantity,Image,Description,UserName")] Book book)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Image,Quantity,Description")] Book book)
     {
       if (id != book.Id)
-      {
         return NotFound();
-      }
 
       if (ModelState.IsValid)
       {
@@ -342,5 +386,54 @@ namespace BeckmanCoulter.BookStore.Controllers
     }
 
     #endregion
+
+    public async Task<IActionResult> MyBook()
+    {
+      var bookBorrow = from c in _context.BookBorrowEntity
+                       join b in _context.BookEntity on c.BookId equals b.Id
+                       orderby c.ReturnTime, c.BorrowTime descending
+                       select new MyBookViewModel
+                       {
+                         BookId = b.Id,
+                         BookBorrowId = c.Id,
+                         BookName = b.Name,
+                         BorrowTime = c.BorrowTime,
+                         ReturnTime = c.ReturnTime
+                       };
+
+      var list = await bookBorrow.ToListAsync();
+      return View(list);
+    }
+
+    public async Task<IActionResult> BackBook(int bookid, int bookborrowid)
+    {
+      using (var transaction = _context.Database.BeginTransaction())
+      {
+        try
+        {
+          // back book
+          var bookBorrowEntity = await _context.BookBorrowEntity.FindAsync(bookborrowid);
+          bookBorrowEntity.ReturnTime = DateTime.Now;
+
+          _context.Update(bookBorrowEntity);
+          await _context.SaveChangesAsync();
+
+          // return quantity
+          var bookEntity = await _context.BookEntity.FindAsync(bookid);
+          bookEntity.Quantity = bookEntity.Quantity + 1;
+
+          _context.Update(bookBorrowEntity);
+          await _context.SaveChangesAsync();
+
+          transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+          _logger.LogError(ex, "Back book errors.");
+        }
+      }
+
+      return RedirectToAction(nameof(MyBook));
+    }
   }
 }
