@@ -1,11 +1,11 @@
 ﻿using BeckmanCoulter.BookStore.Extensions;
 using Microsoft.Azure.ServiceBus;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
 
 namespace BeckmanCoulter.BookStore.Mail

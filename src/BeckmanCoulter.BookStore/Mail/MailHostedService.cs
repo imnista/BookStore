@@ -1,6 +1,5 @@
 ﻿using BeckmanCoulter.BookStore.Extensions;
 using Microsoft.Azure.ServiceBus;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SendGrid;
@@ -9,6 +8,8 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace BeckmanCoulter.BookStore.Mail
 {
