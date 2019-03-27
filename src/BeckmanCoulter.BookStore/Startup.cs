@@ -32,8 +32,8 @@ namespace BeckmanCoulter.BookStore
         {
             services.Configure<CookiePolicyOptions>(options =>
             {
-          // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-          options.CheckConsentNeeded = context => true;
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
@@ -44,41 +44,24 @@ namespace BeckmanCoulter.BookStore
             {
                 options.Authority = options.Authority + "/v2.0/";
 
-          // Per the code below, this application signs in users in any Work and School
-          // accounts and any Microsoft Personal Accounts.
-          // If you want to direct Azure AD to restrict the users that can sign-in, change
-          // the tenant value of the appsettings.json file in the following way:
-          // - only Work and School accounts => 'organizations'
-          // - only Microsoft Personal accounts => 'consumers'
-          // - Work and School and Personal accounts => 'common'
+                // Per the code below, this application signs in users in any Work and School
+                // accounts and any Microsoft Personal Accounts.
+                // If you want to direct Azure AD to restrict the users that can sign-in, change
+                // the tenant value of the appsettings.json file in the following way:
+                // - only Work and School accounts => 'organizations'
+                // - only Microsoft Personal accounts => 'consumers'
+                // - Work and School and Personal accounts => 'common'
 
-          // If you want to restrict the users that can sign-in to only one tenant
-          // set the tenant value in the appsettings.json file to the tenant ID of this
-          // organization, and set ValidateIssuer below to true.
+                // If you want to restrict the users that can sign-in to only one tenant
+                // set the tenant value in the appsettings.json file to the tenant ID of this
+                // organization, and set ValidateIssuer below to true.
 
-          // If you want to restrict the users that can sign-in to several organizations
-          // Set the tenant value in the appsettings.json file to 'organizations', set
-          // ValidateIssuer, above to 'true', and add the issuers you want to accept to the
-          // options.TokenValidationParameters.ValidIssuers collection
-          options.TokenValidationParameters.ValidateIssuer = false;
+                // If you want to restrict the users that can sign-in to several organizations
+                // Set the tenant value in the appsettings.json file to 'organizations', set
+                // ValidateIssuer, above to 'true', and add the issuers you want to accept to the
+                // options.TokenValidationParameters.ValidIssuers collection
+                options.TokenValidationParameters.ValidateIssuer = false;
             });
-
-            //services.AddDbContext<ApplicationDbContext>(options =>
-            //    options.UseSqlServer(
-            //        Configuration.GetConnectionString("DefaultConnection")));
-
-            // Use sqlite DbContext
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("SqliteConnection")
-                ));
-
-            services.AddMvc(options =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             #region Add AddSerilog
             //Read configuration
@@ -104,6 +87,24 @@ namespace BeckmanCoulter.BookStore
             services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
 
             #endregion Add AddSerilog
+
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlServer(
+            //        Configuration.GetConnectionString("DefaultConnection")));
+
+            // Use sqlite DbContext
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(Configuration.GetConnectionString("SqliteConnection")
+                ));
+
+            services.AddMvc(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
 
             services.AddHostedService<MailHostedService>();
             services.AddSingleton<IMailQueueService, MailQueueService>();

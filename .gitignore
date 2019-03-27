@@ -285,5 +285,5 @@ Source/AutomationTest/venv
 
 .DS_Store
 /src/BeckmanCoulter.BookStore/Logs
-
+/src/BeckmanCoulter.BookStore/DB
 /src/BeckmanCoulter.BookStore/appsettings.Development.json
