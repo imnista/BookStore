@@ -80,11 +80,7 @@ namespace BeckmanCoulter.BookStore
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            services.AddHostedService<MailHostedService>();
-            services.AddSingleton<IMailQueueService, MailQueueService>();
-
             #region Add AddSerilog
-
             //Read configuration
             var builder = new ConfigurationBuilder()
                 .SetBasePath(_environment.ContentRootPath)
@@ -108,6 +104,10 @@ namespace BeckmanCoulter.BookStore
             services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
 
             #endregion Add AddSerilog
+
+            services.AddHostedService<MailHostedService>();
+            services.AddSingleton<IMailQueueService, MailQueueService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
