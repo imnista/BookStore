@@ -44,7 +44,7 @@ namespace BeckmanCoulter.BookStore.Mail
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Mail Background Service is stopping.");
-            _queueClient.CloseAsync();
+            _queueClient?.CloseAsync();
             return Task.CompletedTask;
         }
 
