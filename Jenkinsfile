@@ -159,7 +159,7 @@ pipeline {
                             + "--------------------------------------\n"
                             + "Unit Test Result: ${UnitTestResult}\n\n"
 
-                            + "Regards,\nVision team")
+                            + "Regards,\n.NET Learning Group")
 
                         assert false
                     }
@@ -221,7 +221,7 @@ pipeline {
                 + "--------------------------------------\n"
                 + "Unit Test Result: ${UnitTestResult}\n\n"
 
-                + "Regards,\nVision team")
+                + "Regards,\n.NET Learning Group")
         }
 
         success {
@@ -244,7 +244,7 @@ pipeline {
 
                 + "Host URL: ${PUBLISHED_SITE_URL}\n\n"
 
-                + "Regards,\nVision team")
+                + "Regards,\n.NET Learning Group")
         }
 
         unstable {
