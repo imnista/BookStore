@@ -22,17 +22,17 @@ namespace BeckmanCoulter.BookStore.Controllers
   {
     private readonly ApplicationDbContext _context;
     private readonly IHostingEnvironment _env;
-    private readonly IMailQueueService _mailQueueService;
+    //private readonly IMailQueueService _mailQueueService;
     private readonly ILogger<BooksController> _logger;
 
     private const string BookImagePath = "/bookfiles/";
     private const int PageCount = 10;
 
-    public BooksController(ApplicationDbContext context, IHostingEnvironment env, IMailQueueService mailQueueService, ILogger<BooksController> logger)
+    public BooksController(ApplicationDbContext context, IHostingEnvironment env, ILogger<BooksController> logger)
     {
       _context = context;
       _env = env;
-      _mailQueueService = mailQueueService;
+      //_mailQueueService = mailQueueService;
       _logger = logger;
     }
 
