@@ -6,6 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DB\BookStore.db" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="DB\BookStore.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DotNetCore.NPOI" Version="1.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.1.1" />
@@ -25,7 +35,6 @@
 
   <ItemGroup>
     <Folder Include="Data\Migrations\" />
-    <Folder Include="DB\" />
     <Folder Include="wwwroot\bookfiles\" />
   </ItemGroup>
 
