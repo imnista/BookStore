@@ -1,17 +1,17 @@
-@using System.Security.Claims
+﻿@using System.Security.Claims
 
 @if (User.Identity.IsAuthenticated)
 {
   var identity = User.Identity as ClaimsIdentity; // Azure AD V2 endpoint specific
   string preferred_username = identity.Claims.FirstOrDefault(c => c.Type == "preferred_username")?.Value;
   <ul class="nav navbar-nav navbar-right">
-    <li class="navbar-text" style="color: white;">Hello @preferred_username!</li>
-    <li class="nav-item"><a class="nav-link aad" asp-area="AzureAD" asp-controller="Account" asp-action="SignOut">Sign out</a></li>
+    <li class="navbar-text" style="color: white;">你好, @preferred_username!</li>
+    <li class="nav-item"><a class="nav-link aad" asp-area="AzureAD" asp-controller="Account" asp-action="SignOut">退出</a></li>
   </ul>
 }
 else
 {
   <ul class="nav navbar-nav navbar-right">
-    <li class="nav-item"><a class="nav-link aad" asp-area="AzureAD" asp-controller="Account" asp-action="SignIn">Sign in</a></li>
+    <li class="nav-item"><a class="nav-link aad" asp-area="AzureAD" asp-controller="Account" asp-action="SignIn">登录</a></li>
   </ul>
 }

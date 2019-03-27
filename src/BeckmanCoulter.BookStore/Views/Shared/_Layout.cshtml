@@ -25,18 +25,18 @@
         @if (ViewData["Route"] != null)
         {
           <li class="nav-item @(ViewData["Route"].ToString() == "home" ? "active" : "")">
-            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">主页</a>
           </li>
           <li class="nav-item @(ViewData["Route"].ToString() == "book" ? "active" : "")">
-            <a class="nav-link" asp-area="" asp-controller="Books" asp-action="Index">Books</a>
+            <a class="nav-link" asp-area="" asp-controller="Books" asp-action="Index">图书</a>
           </li>
           <li class="nav-item @(ViewData["Route"].ToString() == "mybook" ? "active" : "")">
-            <a class="nav-link" asp-area="" asp-controller="Books" asp-action="MyBook">My History</a>
+            <a class="nav-link" asp-area="" asp-controller="Books" asp-action="MyBook">历史记录</a>
           </li>
           if (isAdmin)
           {
             <li class='nav-item @(ViewData["Route"].ToString() == "uploadlist" ? "active" : "")'>
-              <a class="nav-link" asp-area="" asp-controller="Books" asp-action="UploadList">Upload</a>
+              <a class="nav-link" asp-area="" asp-controller="Books" asp-action="UploadList">上传</a>
             </li>
           }
         }
