@@ -55,18 +55,18 @@ namespace BeckmanCoulter.BookStore.Controllers
             #endregion
             */
 
-            #region 直接发邮件
-            var configuration = _env.GetAppConfiguration();
-            var apiKey = configuration["App:SendGrid:ApiKey"];
-            var sendGridClient = new SendGridClient(apiKey);
-            var from = new EmailAddress("lfu01@beckman.com", "Lynn");
-            var subject = "Sending with SendGrid is Fun";
-            var to = new EmailAddress("lfu01@beckman.com", "Lynn");
-            var plainTextContent = "and easy to do anywhere, even with C#";
-            var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
-            var mail = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
-            var response = sendGridClient.SendEmailAsync(mail).Result;
-            #endregion
+            //#region 直接发邮件
+            //var configuration = _env.GetAppConfiguration();
+            //var apiKey = configuration["App:SendGrid:ApiKey"];
+            //var sendGridClient = new SendGridClient(apiKey);
+            //var from = new EmailAddress("lfu01@beckman.com", "Lynn");
+            //var subject = "Sending with SendGrid is Fun";
+            //var to = new EmailAddress("lfu01@beckman.com", "Lynn");
+            //var plainTextContent = "and easy to do anywhere, even with C#";
+            //var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
+            //var mail = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            //var response = sendGridClient.SendEmailAsync(mail).Result;
+            //#endregion
 
             var bookList = _context.BookEntity.AsQueryable();
         foreach (var item in bookList)
