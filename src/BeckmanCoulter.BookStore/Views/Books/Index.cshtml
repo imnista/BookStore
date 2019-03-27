@@ -1,5 +1,7 @@
 ﻿@using System.Security.Claims
+@using Microsoft.Extensions.Configuration
 @model IEnumerable<BeckmanCoulter.BookStore.DbEntity.Book>
+@inject IConfiguration Config
 
 @{
   ViewData["Title"] = "Index";
@@ -8,7 +10,7 @@
 
   var identity = (ClaimsIdentity)User.Identity;
   var role = identity.FindFirst(ClaimTypes.Role) != null ? identity.FindFirst(ClaimTypes.Role).Value : "";
-  const string adminName = "Administrator";
+  var isAdmin = Config.GetValue<bool>("IsNormalUserAllowed") || role == "Administrator";
 }
 <style type="text/css">
   .page-a {
@@ -23,7 +25,7 @@
   }
 </style>
 
-@if (role == adminName)
+@if (isAdmin)
 {
   <div style=" height: 70px; margin-top: 20px;">
     <a asp-action="Create" class="btn btn-success float-right">添加</a>
@@ -44,7 +46,7 @@
           <h5 class="media-heading">@item.Name </h5>
         </div>
         <div class="col-md-2">
-          @if (role == adminName)
+          @if (isAdmin)
           {
             <div class="float-right">
               <a asp-action="Edit" class="btn btn-outline-success" asp-route-id="@item.Id">编辑</a>
