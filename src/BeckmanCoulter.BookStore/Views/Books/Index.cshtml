@@ -1,76 +1,105 @@
-﻿@model IEnumerable<BeckmanCoulter.BookStore.DbEntity.Book>
+﻿@using System.Security.Claims
+@model IEnumerable<BeckmanCoulter.BookStore.DbEntity.Book>
 
 @{
   ViewData["Title"] = "Index";
+  ViewData["Route"] = "book";
   Layout = "~/Views/Shared/_Layout.cshtml";
+
+  var identity = (ClaimsIdentity)User.Identity;
+  var role = identity.FindFirst(ClaimTypes.Role) != null ? identity.FindFirst(ClaimTypes.Role).Value : "";
+  const string adminName = "Administrator";
+}
+<style type="text/css">
+  .page-a {
+    display: block;
+    float: left;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border: 1px solid #DDD;
+    color: #4caf50;
+  }
+</style>
+
+@if (role == adminName)
+{
+  <div style=" height: 70px; margin-top: 20px;">
+    <a asp-action="Create" class="btn btn-success float-right">添加</a>
+  </div>
 }
 
-<h2>Index</h2>
-
-<p>
-  <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-  <thead>
-  <tr>
-    <th>
-      @Html.DisplayNameFor(model => model.Name)
-    </th>
-    <th>
-      @Html.DisplayNameFor(model => model.Quantity)
-    </th>
-    <th>
-      @Html.DisplayNameFor(model => model.Description)
-    </th>
-    <th>
-      @Html.DisplayNameFor(model => model.UserName)
-    </th>
-    <th></th>
-  </tr>
-  </thead>
-  <tbody>
-  @foreach (var item in Model)
-  {
-    <tr>
-      <td>
-        @Html.DisplayFor(modelItem => item.Name)
-      </td>
-      <td>
-        @Html.DisplayFor(modelItem => item.Quantity)
-      </td>
-      <td>
-        @Html.DisplayFor(modelItem => item.Description)
-      </td>
-      <td>
-        @Html.DisplayFor(modelItem => item.UserName)
-      </td>
-      <td>
-        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-        <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-      </td>
-    </tr>
-  }
-  </tbody>
-</table>
-
-<div class="panel panel-default">
-  <div class="panel-heading ">Upload Book List</div>
-  <div class="panel-body">
-    <div class="row">
-      <div class="col-md-4">
-        <form asp-action="UploadList" asp-controller="Books" enctype="multipart/form-data" method="post">
-
-          <div class="form-group">
-            <label a class="control-label"></label>
-            <input type="file" name="files" />
-          </div>
-
-          <div class="form-group">
-            <input type="submit" value="UploadList" class="btn btn-primary" />
-          </div>
-        </form>
+@foreach (var item in Model)
+{
+  <div class="media" style="margin-top: 20px;">
+    <div class="media-left">
+      <a href="/Books/Details/@item.Id">
+        <img class="media-object img-thumbnail" width="120" height="120" src="@item.Image" style="margin-right: 10px;" alt="Responsive image">
+      </a>
+    </div>
+    <div class="media-body">
+      <div class="row">
+        <div class="col-md-10">
+          <h5 class="media-heading">@item.Name </h5>
+        </div>
+        <div class="col-md-2">
+          @if (role == adminName)
+          {
+            <div class="float-right">
+              <a asp-action="Edit" class="btn btn-outline-success" asp-route-id="@item.Id">编辑</a>
+              <a asp-action="Delete" class="btn btn-outline-danger" asp-route-id="@item.Id">删除</a>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          @if (item.Quantity > 0)
+          {
+            <div style="font-size: 13px;margin-bottom: 10px; padding-left: 2px;">数量: @item.Quantity</div>
+          }
+          else
+          {
+            <div style="font-size: 13px; color: red; margin-bottom: 10px;padding-left: 2px;">此书没有库存了</div>
+          }
+          <div style="font-size: 13px;">@item.Description</div>
+        </div>
       </div>
     </div>
   </div>
-</div>
+  <hr />
+}
+@if (ViewBag.BookListCount > 10)
+{
+  <div style="height: 50px;">
+    @for (int i = 1; i <= ViewBag.PageCount; i++)
+    {
+      if (Context.Request.Query["pageIndex"].Count <= 0)
+      {
+        if (i == 1)
+        {
+          <a class="page-a" style="background-color:#4caf50; color:white;" href="/books/index?pageIndex=@i">@i</a>
+        }
+        else
+        {
+          <a class="page-a" href="/books/index?pageIndex=@i">@i</a>
+        }
+      }
+      else
+      {
+        if (i == Convert.ToInt32(Context.Request.Query["pageIndex"].FirstOrDefault()))
+        {
+          <a class="page-a" style="background-color:#4caf50; color:white;" href="/books/index?pageIndex=@i">@i</a>
+        }
+        else
+        {
+          <a class="page-a" href="/books/index?pageIndex=@i">@i</a>
+        }
+      }
+    }
+  </div>
+}
+
+
+

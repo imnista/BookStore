@@ -1,0 +1,25 @@
+﻿
+@{
+  ViewData["Title"] = "Upload books";
+  ViewData["Route"] = "uploadlist";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="panel panel-default" style="margin-top: 20px;">
+  <div class="panel-heading ">上传文件</div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-md-4">
+        <form asp-action="UploadList" asp-controller="Books" enctype="multipart/form-data" method="post">
+          <div class="form-group">
+            <label a class="control-label"></label>
+            <input type="file" name="files" />
+          </div>
+          <div class="form-group">
+            <input type="submit" value="上传" class="btn btn-primary" />
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
