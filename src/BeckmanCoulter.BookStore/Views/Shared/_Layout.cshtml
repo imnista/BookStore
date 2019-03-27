@@ -1,10 +1,13 @@
 ﻿@using System.Security.Claims
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Config
+
 <!DOCTYPE html>
 <html lang="en">
 @{
   var identity = (ClaimsIdentity)User.Identity;
   var role = identity.FindFirst(ClaimTypes.Role) != null ? identity.FindFirst(ClaimTypes.Role).Value : "";
-  const string adminName = "Administrator";
+  var isAdmin = Config.GetValue<bool>("IsNormalUserAllowed") || role == "Administrator";
 }
 
 <head>
@@ -28,7 +31,7 @@
         <li class="nav-item @(ViewData["Route"].ToString() == "mybook" ? "active" : "")">
           <a class="nav-link" asp-area="" asp-controller="Books" asp-action="MyBook">My History</a>
         </li>
-        @if (role == adminName)
+        @if (isAdmin)
         {
           <li class='nav-item @(ViewData["Route"].ToString() == "uploadlist" ? "active" : "")'>
             <a class="nav-link" asp-area="" asp-controller="Books" asp-action="UploadList">Upload</a>
