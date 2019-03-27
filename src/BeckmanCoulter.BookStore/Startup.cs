@@ -63,6 +63,7 @@ namespace BeckmanCoulter.BookStore
                 options.TokenValidationParameters.ValidateIssuer = false;
             });
 
+
             #region Add AddSerilog
             //Read configuration
             var builder = new ConfigurationBuilder()
