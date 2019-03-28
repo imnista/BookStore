@@ -36,7 +36,7 @@ pipeline {
         // Azure Resources
         AZURE_SUBSCRIPTION = "bcls-ngsprep-dev" // #
         AZURE_RESOURCE_GROUP = "dl-bookstore-rg" // #
-        AZURE_APP_NAME = "bookstore-devops-webapp-dev" // #
+        AZURE_APP_NAME = "bookstore-web" // #
 
         // Building, testing, and publishing configurations
         BUILD_CONFIG = "Release" // #
