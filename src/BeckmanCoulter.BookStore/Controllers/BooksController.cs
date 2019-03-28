@@ -358,10 +358,13 @@ namespace BeckmanCoulter.BookStore.Controllers
 
     #endregion
 
+    #region Mybook
+
     public async Task<IActionResult> MyBook()
     {
       var bookBorrow = from c in _context.BookBorrowEntity
                        join b in _context.BookEntity on c.BookId equals b.Id
+                       where c.Email == GetUserEmail()
                        orderby c.ReturnTime, c.BorrowTime descending
                        select new MyBookViewModel
                        {
@@ -406,5 +409,7 @@ namespace BeckmanCoulter.BookStore.Controllers
 
       return RedirectToAction(nameof(MyBook));
     }
+
+    #endregion
   }
 }
